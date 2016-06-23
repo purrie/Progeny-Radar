@@ -2,17 +2,24 @@
 DetectedAgent(integer count)
 {
 	status = ALARM_NONE;
+	ClearVampires();
 	while(count --> 0)
 	{
 		key id = llDetectedKey(count);
+		if(DetectProgeny(id) == FALSE)
+			jump continue;
+			
+		AddVampire(id);
 		if(IsOnWhitelist(id))
 			jump continue;
-		else if(status < ALARM_PRESENCE)
-			status = ALARM_PRESENCE;
 			
 		vector myPos = llGetPos();
 		vector otherPos = llDetectedPos(count);
 		float distance = llVecDist(myPos, otherPos);
+		
+		if(distance <= PR_PRESENCE)
+			status = ALARM_PRESENCE;
+			
 		if(distance <= PR_ALARM)
 		{
 			status = ALARM_INTRUSION;
@@ -40,6 +47,7 @@ ClearAlarm()
 {
 	status = ALARM_NONE;
 	UpdateStatus();
+	ClearVampires();
 }
 UpdateStatus()
 {
@@ -96,4 +104,23 @@ SilenceOff()
 {
 	silenceTimer = 0;
 	llOwnerSay("Radar unmuted");
+}
+integer DetectProgeny(key avatar)
+{
+	list attachedNames = [];
+	list attachedUUIDs = llGetAttachedList(avatar);
+	integer i = llGetListLength(attachedUUIDs);
+	
+	while(i --> 0)
+	{
+		key uuid = llList2Key(attachedUUIDs, i);
+		list temp = llGetObjectDetails(uuid, [OBJECT_NAME]);
+		string name = llList2String(temp, 0);
+		
+		if(llSubStringIndex(name, EVIL_NAME) >= 0)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
 }

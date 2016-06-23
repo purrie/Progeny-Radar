@@ -1,6 +1,6 @@
 
 
-list whitelist;
+list whitelist = [];
 string alarmSound = "alarm";
 string noticeSound = "notify";
 
